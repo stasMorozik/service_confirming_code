@@ -1,7 +1,6 @@
 require 'dry-monads'
 
 module Core
-
   module ValueObjects
     class Email
       

@@ -8,6 +8,7 @@ module Core
     attr_reader :email
     attr_reader :code
     attr_reader :confirmed
+    attr_reader :created
 
     private_class_method :new
 
@@ -15,6 +16,7 @@ module Core
       @value = email
       @code = rand(1000...9999)
       @confirmed = false
+      @created = Time.now.to_i + 900
     end
 
     def self.create(email)
@@ -40,6 +42,22 @@ module Core
 
       @confirmed = true
 
+      Dry::Monads::Success(true)
+    end
+
+    def is_confirmed
+      unless @confirmed
+        return Dry::Monads::Failure('Code is not confirmed')
+      end
+  
+      Dry::Monads::Success(true)
+    end
+  
+    def is_alive
+      if Time.now.to_i >= @created
+        return Dry::Monads::Failure('Code is not confirmed')
+      end
+  
       Dry::Monads::Success(true)
     end
   end

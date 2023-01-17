@@ -39,4 +39,40 @@ describe "Entity" do
       end
     end
   end
+
+  describe "is confirm" do
+    context "valid" do
+      r = Core::Entity.create('test@gmail.com')
+      it 'test@gmail.com' do
+        r.bind do |confrimation_code|
+          confrimation_code.confirm(confrimation_code.code)
+          result = confrimation_code.is_confirmed()
+          expect(result.success?).to eq(true)
+        end
+      end
+    end
+
+    context "invalid" do
+      r = Core::Entity.create('test@gmail.com')
+      it 'test@gmail.com' do
+        r.bind do |confrimation_code|
+          result = confrimation_code.is_confirmed()
+          expect(result.failure?).to eq(true)
+        end
+      end
+    end
+  end
+
+  describe "is alive" do
+    context "valid" do
+      r = Core::Entity.create('test@gmail.com')
+      it 'test@gmail.com' do
+        r.bind do |confrimation_code|
+          confrimation_code.confirm(confrimation_code.code)
+          result = confrimation_code.is_alive()
+          expect(result.success?).to eq(true)
+        end
+      end
+    end
+  end
 end
