@@ -36,7 +36,23 @@ module Core
         return Dry::Monads::Failure('Wrong code') 
       end
 
+      reuslt_is_alive = self.is_alive()
+
+      if reuslt_is_alive.failure?
+        return reuslt_is_alive
+      end
+
       @confirmed = true
+
+      Dry::Monads::Success(true)
+    end
+
+    def lifetime
+      reuslt_is_alive = self.is_alive()
+
+      if reuslt_is_alive.success?
+        return Dry::Monads::Failure('You already have a confirmation code')
+      end
 
       Dry::Monads::Success(true)
     end

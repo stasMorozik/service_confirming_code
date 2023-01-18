@@ -32,23 +32,23 @@ module Core
           @getting_port.get(email)
         end
 
-        result_is_alive = case maybe_entity
+        result_lifetime = case maybe_entity
         when Some then
           maybe_entity.bind do |entity|
             result_is_confirmed = entity.is_confirmed()
             case result_is_confirmed
             when Failure then
-              entity.is_alive()
+              entity.lifetime()
             when Success then
-              Failure(:already_confirmed)
+              Dry::Monads::Success(:already_confirmed)
             end
           end
         when None then
-          Failure(:none)
+          Dry::Monads::Success(:none)
         end
         
-        if result_is_alive.success?
-          return Failure('You already have a confirmation code')
+        if result_lifetime.failure?
+          return result_lifetime
         end
 
         result_email.bind do |email|
