@@ -13,22 +13,18 @@ module Core
     private_class_method :new
 
     def initialize(email)
-      @value = email
+      @email = email
       @code = rand(1000...9999)
       @confirmed = false
       @created = Time.now.to_i + 900
     end
 
     def self.create(email)
-      result = Core::ValueObjects::Email.create(email)
-      
-      if result.failure?
-        return result
+      unless email.instance_of? Core::ValueObjects::Email
+        return Dry::Monads::Failure('Invalid email address')
       end
 
-      result.bind do |email| 
-        Dry::Monads::Success(new(email))
-      end
+      Dry::Monads::Success(new(email))
     end
 
     def confirm(code)

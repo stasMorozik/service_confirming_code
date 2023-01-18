@@ -6,7 +6,8 @@ module Core
       
       include Dry::Monads[:result]
 
-      attr_accessor :value
+      attr_reader :value
+      
       private_class_method :new
 
       def initialize(email)
