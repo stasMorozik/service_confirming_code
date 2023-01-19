@@ -32,23 +32,22 @@ module Core
           @getting_port.get(email)
         end
 
-        result_lifetime = case maybe_entity
-        when Some then
+        result_lifetime = if maybe_entity.success?
           maybe_entity.bind do |entity|
             result_is_confirmed = entity.is_confirmed()
-            case result_is_confirmed
-            when Failure then
-              entity.lifetime()
-            when Success then
-              Dry::Monads::Success(:already_confirmed)
+
+            if result_is_confirmed.failure?
+              return entity.lifetime()
             end
+
+            result_is_confirmed
           end
-        when None then
-          Dry::Monads::Success(:none)
         end
         
-        if result_lifetime.failure?
-          return result_lifetime
+        if result_lifetime
+          if result_lifetime.failure?
+            return result_lifetime
+          end
         end
 
         result_email.bind do |email|
@@ -56,8 +55,9 @@ module Core
 
           result_entity.bind do |confirmation_code|
             result_created = @creating_port.create(confirmation_code)
+
             if result_created.failure?
-              result_created
+              return result_created
             end
 
             @notifying_port.notify(email, "Hello! Your Code is #{confirmation_code.code}.")

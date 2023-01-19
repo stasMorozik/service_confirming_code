@@ -1,4 +1,6 @@
-require_relative 'entity'
+require 'dry-monads'
+require 'core/entity'
+require 'core/value_objects/email'
 
 module Core
   module UseCases
@@ -16,7 +18,7 @@ module Core
         @updating_port = updating_port
       end
 
-      def update(email, code)
+      def confirm(email, code)
         result_email = Core::ValueObjects::Email.create(email)
 
         if result_email.failure?
@@ -26,18 +28,19 @@ module Core
         maybe_entity = result_email.bind do |email|
           @getting_port.get(email)
         end
-
-        case maybe_entity
-        when Some then
-          maybe_entity.bind do |entity|
-            result_confirmed = entity.confirm(code)
-            case result_confirmed
-            when Failure then result_confirmed
-            when Success then @updating_port.update(entity)
-            end
+        
+        if maybe_entity.failure?
+          return maybe_entity
+        end
+        
+        maybe_entity.bind do |entity|
+          result_confirmed = entity.confirm(code)
+          
+          if result_confirmed.failure?
+            return result_confirmed
           end
-        when None
-          Failure('Confirmation code not found')
+          
+          @updating_port.update(entity)
         end
       end
     end
