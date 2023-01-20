@@ -16,7 +16,7 @@ module Adapters
 
       puts message
 
-      return Dry::Monads::Success(true)
+      Dry::Monads::Success(true)
     end
   end
 end

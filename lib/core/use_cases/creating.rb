@@ -61,8 +61,6 @@ module Core
             end
 
             @notifying_port.notify(email, "Hello! Your Code is #{confirmation_code.code}.")
-            
-            Dry::Monads::Success(true)
           end
         end
       end
