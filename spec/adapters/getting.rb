@@ -4,7 +4,7 @@ require 'core/value_objects/email'
 
 module Adapters
   class Gettign
-    include Dry::Monads[:maybe]
+    include Dry::Monads[:result]
 
     attr_reader :confirmation_codes
 
@@ -20,10 +20,10 @@ module Adapters
       end
       
       unless @confirmation_codes[email.value]
-        return Dry::Monads::None()
+        return Dry::Monads::Failure('Code is not found')
       end
 
-      return Dry::Monads::Some(@confirmation_codes[email.value])
+      return Dry::Monads::Success(@confirmation_codes[email.value])
     end
   end
 end

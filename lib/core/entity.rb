@@ -67,7 +67,7 @@ module Core
   
     def is_alive
       if Time.now.to_i >= @created
-        return Dry::Monads::Failure('Code is not confirmed')
+        return Dry::Monads::Failure('Code is not alive')
       end
   
       Dry::Monads::Success(true)

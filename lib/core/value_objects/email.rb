@@ -3,7 +3,6 @@ require 'dry-monads'
 module Core
   module ValueObjects
     class Email
-      
       include Dry::Monads[:result]
 
       attr_reader :value
