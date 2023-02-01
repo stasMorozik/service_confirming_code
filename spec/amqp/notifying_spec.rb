@@ -1,4 +1,3 @@
-require 'pg'
 require 'bunny'
 require 'core/value_objects/email'
 require 'adapters/amqp/notifying'
@@ -25,6 +24,7 @@ describe "Amqp adapters" do
         r.bind do |email|
           result = notifying_adapter.notify(email, "test")
           expect(result.success?).to eq(true)
+          conn.close
         end
       end
     end
