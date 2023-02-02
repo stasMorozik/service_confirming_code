@@ -40,7 +40,8 @@ module Apps
             hash = JSON.parse(payload)
             result = creating_use_case.create(hash['email'])
             result.bind do |r|
-              @response_queue.publish("Result of operation creating confirmation code - #{r}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+              @logging_queue.publish("Result of operation creating confirmation code - #{r}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+              @response_queue.publish(JSON.generate(r))
             end
           rescue => e
             @logging_queue.publish("An error of type #{e.class} happened, message is #{e.message}. #{@creating_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
@@ -53,11 +54,16 @@ module Apps
             hash = JSON.parse(payload)
             result = creating_use_case.create(hash['email'], hash['code'])
             result.bind do |r|
-              @response_queue.publish("Result of operation confirming - #{r}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+              @logging_queue.publish("Result of operation confirming - #{r}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+              @response_queue.publish(JSON.generate(r))
             end
           rescue => e
             @logging_queue.publish("An error of type #{e.class} happened, message is #{e.message}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
           end
+        end
+
+        loop do
+          sleep 5
         end
       end
     end

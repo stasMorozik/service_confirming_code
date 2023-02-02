@@ -2,16 +2,19 @@ require 'adapters/postgreSQL/updating'
 require 'core/value_objects/email'
 require 'core/entity'
 require 'pg'
+require 'dotenv/load'
 
 describe "PostgreSQL adapters" do
   describe "updating" do
-    
+
+    Dotenv.load('.env.test')
+
     connect = PG.connect(
-      :dbname   => 'confirmation_codes',
-      :host     => 'localhost',
-      :port     => 5432,
-      :user     => 'db_user',
-      :password => '12345'
+      :dbname   => ENV["PG_NAME"],
+      :host     => ENV["PG_HOST"],
+      :port     => ENV["PG_PORT"],
+      :user     => ENV["PG_USER"],
+      :password => ENV["PG_PASSWORD"]
     )
 
     updating_adapter = Adapters::PostgreSQL::Updating.new(connect)

@@ -22,11 +22,11 @@ module Adapters
         @connect.transaction do |conn|
           conn.exec_params('DELETE from codes where email = $1', [entity.email.value])
           conn.exec_params(
-            'INSERT INTO codes VALUES($1, $2, $3, $4)', 
+            'INSERT INTO codes VALUES($1, $2, $3, $4)',
             [
-              entity.email.value, 
-              entity.code, 
-              entity.created, 
+              entity.email.value,
+              entity.code,
+              entity.created,
               entity.confirmed
             ]
           )

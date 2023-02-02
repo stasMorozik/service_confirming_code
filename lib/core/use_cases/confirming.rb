@@ -1,6 +1,6 @@
 require 'dry-monads'
-require 'core/entity'
-require 'core/value_objects/email'
+require_relative '../entity'
+require_relative '../value_objects/email'
 
 module Core
   module UseCases
@@ -28,18 +28,18 @@ module Core
         maybe_entity = result_email.bind do |email|
           @getting_port.get(email)
         end
-        
+
         if maybe_entity.failure?
           return maybe_entity
         end
-        
+
         maybe_entity.bind do |entity|
           result_confirmed = entity.confirm(code)
-          
+
           if result_confirmed.failure?
             return result_confirmed
           end
-          
+
           @updating_port.update(entity)
         end
       end
