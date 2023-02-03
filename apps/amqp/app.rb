@@ -40,16 +40,28 @@ module Apps
             hash = JSON.parse(payload)
             @creating_use_case.create(hash['email']).either(
               -> success {
-                @logging_queue.publish("Result of operation creating confirmation code - #{success}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @logging_queue.publish(JSON.generate({
+                  "type" => "info",
+                  "message" => "Result of operation creating confirmation code - #{success}. #{@creating_queue}. #{id_app}. Payload - #{payload}",
+                  "date" => DateTime.now
+                }))
                 @response_queue.publish(JSON.generate({"operation" => "creating", "message" => success, "success" => true}))
               },
               -> failure {
-                @logging_queue.publish("Result of operation creating confirmation code - #{failure}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @logging_queue.publish(JSON.generate({
+                  "type" => "info",
+                  "message" => "Result of operation creating confirmation code - #{failure}. #{@creating_queue}. #{id_app}. Payload - #{payload}",
+                  "date" => DateTime.now
+                }))
                 @response_queue.publish(JSON.generate({"operation" => "creating", "message" => failure, "success" => false}))
               }
             )
           rescue => e
-            @logging_queue.publish("An error of type #{e.class} happened, message is #{e.message}. #{@creating_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+            @logging_queue.publish(JSON.generate({
+              "type" => "warning",
+              "message" => "An error of type #{e.class} happened, message is #{e.message}. #{@creating_queue}. #{id_app}. Payload - #{payload}",
+              "date" => DateTime.now
+            }))
             @response_queue.publish(JSON.generate({"operation" => "creating", "message" => "Something went wrong", "success" => false}))
           end
         end
@@ -60,16 +72,28 @@ module Apps
             hash = JSON.parse(payload)
             @confirming_use_case.confirm(hash['email'], hash['code']).either(
               -> success {
-                @logging_queue.publish("Result of operation confirming - #{success}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @logging_queue.publish(JSON.generate({
+                  "type" => "info",
+                  "message" => "Result of operation confirming code - #{success}. #{@confirming_queue}. #{id_app}. Payload - #{payload}",
+                  "date" => DateTime.now
+                }))
                 @response_queue.publish(JSON.generate({"operation" => "confirming", "message" => success, "success" => true}))
               },
               -> failure {
-                @logging_queue.publish("Result of operation confirming - #{failure}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @logging_queue.publish(JSON.generate({
+                  "type" => "info",
+                  "message" => "Result of operation confirming code - #{failure}. #{@confirming_queue}. #{id_app}. Payload - #{payload}",
+                  "date" => DateTime.now
+                }))
                 @response_queue.publish(JSON.generate({"operation" => "confirming", "message" => failure, "success" => false}))
               }
             )
           rescue => e
-            @logging_queue.publish("An error of type #{e.class} happened, message is #{e.message}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+            @logging_queue.publish(JSON.generate({
+              "type" => "warning",
+              "message" => "An error of type #{e.class} happened, message is #{e.message}. #{@confirming_queue}. #{id_app}. Payload - #{payload}",
+              "date" => DateTime.now
+            }))
             @response_queue.publish(JSON.generate({"operation" => "confirming", "message" => "Something went wrong", "success" => false}))
           end
         end
