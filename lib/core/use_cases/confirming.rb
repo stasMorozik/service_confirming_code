@@ -29,19 +29,21 @@ module Core
           @getting_port.get(email)
         end
 
-        if maybe_entity.failure?
-          return maybe_entity
-        end
-
-        maybe_entity.bind do |entity|
-          result_confirmed = entity.confirm(code)
-
-          if result_confirmed.failure?
-            return result_confirmed
-          end
-
-          @updating_port.update(entity)
-        end
+        maybe_entity.either(
+          -> entity {
+            entity.confirm(code).either(
+              -> success {
+                @updating_port.update(entity)
+              },
+              -> error {
+                Dry::Monads::Failure(error)
+              }
+            )
+          },
+          -> error {
+            Dry::Monads::Failure(error)
+          }
+        )
       end
     end
   end

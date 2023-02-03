@@ -38,13 +38,19 @@ module Apps
           @channel.ack(delivery_info.delivery_tag)
           begin
             hash = JSON.parse(payload)
-            result = creating_use_case.create(hash['email'])
-            result.bind do |r|
-              @logging_queue.publish("Result of operation creating confirmation code - #{r}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
-              @response_queue.publish(JSON.generate(r))
-            end
+            @creating_use_case.create(hash['email']).either(
+              -> success {
+                @logging_queue.publish("Result of operation creating confirmation code - #{success}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @response_queue.publish(JSON.generate({"operation" => "creating", "message" => success, "success" => true}))
+              },
+              -> failure {
+                @logging_queue.publish("Result of operation creating confirmation code - #{failure}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @response_queue.publish(JSON.generate({"operation" => "creating", "message" => failure, "success" => false}))
+              }
+            )
           rescue => e
             @logging_queue.publish("An error of type #{e.class} happened, message is #{e.message}. #{@creating_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+            @response_queue.publish(JSON.generate({"operation" => "creating", "message" => "Something went wrong", "success" => false}))
           end
         end
 
@@ -52,13 +58,19 @@ module Apps
           @channel.ack(delivery_info.delivery_tag)
           begin
             hash = JSON.parse(payload)
-            result = creating_use_case.create(hash['email'], hash['code'])
-            result.bind do |r|
-              @logging_queue.publish("Result of operation confirming - #{r}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
-              @response_queue.publish(JSON.generate(r))
-            end
+            @confirming_use_case.confirm(hash['email'], hash['code']).either(
+              -> success {
+                @logging_queue.publish("Result of operation confirming - #{success}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @response_queue.publish(JSON.generate({"operation" => "confirming", "message" => success, "success" => true}))
+              },
+              -> failure {
+                @logging_queue.publish("Result of operation confirming - #{failure}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+                @response_queue.publish(JSON.generate({"operation" => "confirming", "message" => failure, "success" => false}))
+              }
+            )
           rescue => e
             @logging_queue.publish("An error of type #{e.class} happened, message is #{e.message}. #{@confirming_queue} #{DateTime.now} #{id_app}. Payload - #{payload}")
+            @response_queue.publish(JSON.generate({"operation" => "confirming", "message" => "Something went wrong", "success" => false}))
           end
         end
 

@@ -15,14 +15,17 @@ module Adapters
       end
 
       def update(entity)
-        unless entity.instance_of? Core::Entity
+        instance_of_mapper_entity = entity.instance_of? Adapters::PostgreSQL::Mappers::Entity
+        instance_of_entity = entity.instance_of? Core::Entity
+
+        if instance_of_mapper_entity == false && instance_of_entity == false
           return Dry::Monads::Failure('Invalid entity')
         end
 
         res = @connect.transaction do |conn|
           conn.exec_params(
-            'UPDATE codes SET confirmed = $1 WHERE email = $2', 
-            [ 
+            'UPDATE codes SET confirmed = $1 WHERE email = $2',
+            [
               entity.confirmed,
               entity.email.value
             ]

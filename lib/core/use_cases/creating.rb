@@ -32,37 +32,50 @@ module Core
           @getting_port.get(email)
         end
 
-        result_lifetime = if maybe_entity.success?
-          maybe_entity.bind do |entity|
+
+        result_lifetime = maybe_entity.either(
+          -> entity {
             result_is_confirmed = entity.is_confirmed()
+            result_is_confirmed.or(entity.lifetime())
+          },
+          -> error { Dry::Monads::Success("Entity not found") }
+        )
 
-            if result_is_confirmed.failure?
-              return entity.lifetime()
-            end
+        result_created = result_lifetime.either(
+          -> success {
+            result_email.fmap(-> email {
+              result_entity = Core::Entity.create(email)
 
-            result_is_confirmed
-          end
-        end
-        
-        if result_lifetime
-          if result_lifetime.failure?
-            return result_lifetime
-          end
-        end
+              result_entity.either(
+                -> entity {
+                  @creating_port.create(entity).either(
+                    -> success {
+                      entity
+                    },
+                    -> error {
+                      Dry::Monads::Failure(error)
+                    }
+                  )
+                },
+                -> error {
+                  Dry::Monads::Failure(error)
+                }
+              )
+            })
+          },
+          -> error {
+            Dry::Monads::Failure(error)
+          }
+        )
 
-        result_email.bind do |email|
-          result_entity = Core::Entity.create(email)
-
-          result_entity.bind do |confirmation_code|
-            result_created = @creating_port.create(confirmation_code)
-
-            if result_created.failure?
-              return result_created
-            end
-
-            @notifying_port.notify(email, "Hello! Your Code is #{confirmation_code.code}.")
-          end
-        end
+        result_created.either(
+          -> entity {
+            @notifying_port.notify(entity.email, "Hello! Your Code is #{entity.code}.")
+          },
+          -> error {
+            Dry::Monads::Failure(error)
+          }
+        )
       end
     end
   end
