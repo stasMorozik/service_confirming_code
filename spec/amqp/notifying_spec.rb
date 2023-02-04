@@ -27,7 +27,7 @@ describe "Amqp adapters" do
       it 'test@gmail.com' do
         r = Core::ValueObjects::Email.create('test@gmail.com')
         r.bind do |email|
-          result = notifying_adapter.notify(email, "test")
+          result = notifying_adapter.notify(email, "test" "test")
           expect(result.success?).to eq(true)
           conn.close
         end

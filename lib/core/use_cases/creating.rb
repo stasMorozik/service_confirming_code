@@ -70,7 +70,7 @@ module Core
 
         result_created.either(
           -> entity {
-            @notifying_port.notify(entity.email, "Hello! Your Code is #{entity.code}.")
+            @notifying_port.notify(entity.email, "Confirm email address", "Hello! Your Code is #{entity.code}.")
           },
           -> error {
             Dry::Monads::Failure(error)

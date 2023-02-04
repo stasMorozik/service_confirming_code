@@ -14,7 +14,7 @@ module Adapters
         @queue = queue
       end
 
-      def notify(email, message)
+      def notify(email, subject, message)
         unless email.instance_of? Core::ValueObjects::Email
           return Dry::Monads::Failure('Invalid email')
         end
@@ -23,8 +23,13 @@ module Adapters
           return Dry::Monads::Failure('Invalid message')
         end
 
+        unless subject.instance_of? String
+          return Dry::Monads::Failure('Invalid subject')
+        end
+
         @queue.publish(JSON.generate({
           :message => message,
+          :subject => subject,
           :email => email.value
         }))
 
